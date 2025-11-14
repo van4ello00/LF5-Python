@@ -1,4 +1,4 @@
-import os
+import random
 ## тут используем Dictionary для хранения всех глав ( Словарь all_kapiteln )
 ## где ключ — номер секции
 ## а значение — текст главы:
@@ -221,12 +221,21 @@ Mit nur einem Satz springst du dem Wärter in den Rücken. Der Gartak ist vollko
 
 sektionen = {
     # --- 1 ---
-    1: {"kapitel": 1, "next": [72]},
-
-    72: {"kapitel": 72, "next": [76]},
-    76: {"kapitel": 76, "next": [55]},
-    55: {"kapitel": 55, "next": [92]},
-    92: {"kapitel": 92, "next": [35]},
+    1:  {"kapitel": 1, 
+         "next": [72]
+        },
+    72: {"kapitel": 72, 
+         "next": [76]
+         },
+    76: {"kapitel": 76, 
+         "next": [55]
+         },
+    55: {"kapitel": 55, 
+         "next": [92]
+         },
+    92: {"kapitel": 92, 
+         "next": [35]
+         },
 
     # --- 35 (ветвление: бой или бегство) ---
     35: {
@@ -251,16 +260,28 @@ sektionen = {
     42: {
         "kapitel": 42,
         "aktionen": [
-            {"typ": "item", "wert": "Schwert", "effekt": {"Angriff": +3}},
-            {"typ": "item", "wert": "Öllaterne"}
+            {"typ": "item", 
+             "wert": "Schwert", 
+             "effekt": {"Angriff": +3}
+             },
+            {"typ": "item", 
+             "wert": "Öllaterne"}
         ],
         "next": [77]
     },
 
-    77: {"kapitel": 77, "next": [7]},
-    7: {"kapitel": 7, "next": [90]},
-    90: {"kapitel": 90, "next": [65]},
-    65: {"kapitel": 65, "next": [11]},
+    77: {"kapitel": 77, 
+         "next": [7]
+         },
+    7: {"kapitel": 7, 
+        "next": [90]
+        },
+    90: {"kapitel": 90, 
+         "next": [65]
+         },
+    65: {"kapitel": 65, 
+         "next": [11]
+         },
 
     # --- 11 (ветвление в зависимости от инвентаря) ---
     11: {
@@ -271,33 +292,65 @@ sektionen = {
         }
     },
 
-    56: {"kapitel": 56, "next": [3]},
-    60: {"kapitel": 60, "next": [16]},
-    16: {"kapitel": 16, "next": [89]},
-    89: {"kapitel": 89, "next": [58]},
-    58: {"kapitel": 58, "next": [33]},
-    33: {"kapitel": 33, "next": [13]},
-    13: {"kapitel": 13, "next": [38]},
-    38: {"kapitel": 38, "next": [100]},
+    56: {"kapitel": 56, 
+         "next": [3]
+         },
+    60: {"kapitel": 60, 
+         "next": [16]
+         },
+    16: {"kapitel": 16, 
+         "next": [89]
+         },
+    89: {"kapitel": 89, 
+         "next": [58]
+         },
+    58: {"kapitel": 58, 
+         "next": [33]
+         },
+    33: {"kapitel": 33, 
+         "next": [13]
+         },
+    13: {"kapitel": 13, 
+         "next": [38]
+         },
+    38: {"kapitel": 38, 
+         "next": [100]
+         },
 
     # --- 100 (смерть) ---
-    100: {"kapitel": 100, "effekt": {"Vitalität": 0}, "next": []},
+    100: {"kapitel": 100, 
+          "effekt": {"Vitalität": 0}, 
+          "next": []
+          },
 
     # --- 46 / 10 / 15 / 3 — побочная ветка ---
-    46: {"kapitel": 46, "next": [10]},
-    10: {"kapitel": 10, "next": [15]},
-    15: {"kapitel": 15, "next": [3]},
-    3: {"kapitel": 3, "effekt": {"Vitalität": -1}, "next": [10]},
+    46: {"kapitel": 46, 
+         "next": [10]
+         },
+    10: {"kapitel": 10, 
+         "next": [15]
+         },
+    15: {"kapitel": 15, 
+         "next": [3]
+         },
+    3: {"kapitel": 3, 
+        "effekt": {"Vitalität": -1}, 
+        "next": [10]
+        },
 
     # --- 101 (начало второй главы, плен) ---
     101: {
         "kapitel": 101,
-        "aktionen": [{"typ": "verlust", "wert": "Inventar"}],
+        "aktionen": [{"typ": "verlust", 
+                      "wert": "Inventar"
+                      }],
         "inventar_reset": ["Gefangenengewand"],
         "next": [292]
     },
 
-    292: {"kapitel": 292, "next": [271]},
+    292: {"kapitel": 292, 
+          "next": [271]
+          },
 
     271: {
         "kapitel": 271,
@@ -309,8 +362,13 @@ sektionen = {
         }
     },
 
-    256: {"kapitel": 256, "next": ["K1"]},
-    105: {"kapitel": 105, "effekt": {"Vitalität": -1}, "next": ["K1"]},
+    256: {"kapitel": 256, 
+          "next": ["K1"]
+          },
+    105: {"kapitel": 105, 
+          "effekt": {"Vitalität": -1}, 
+          "next": ["K1"]
+          },
 
     # --- Бой с Гартаком ---
     "K1": {
@@ -343,20 +401,145 @@ spieler = {
     "Inventar": []
 }
 
-gegner = {
-    "Gartak": {"Angriff": 11, "Verteidigung": 10, "Resistenz": 2},
-    "Gartak_Überrascht": {"Angriff": 10, "Verteidigung": 10, "Resistenz": 2}
-}
-
-items = {
-    "Schwert": {"typ": "Waffe", "effekt": {"Angriff": +3}},
-    "Öllaterne": {"typ": "Utensil"}
-}
-
-def show_kapitel(num, kapitel_text):
+## Функция для отображения текста главы
+def show_kapitel(num):
     print()
     print(f'--- Kapitel {num} ---')
-    print(kapitel_text[num])
+    print(all_kapiteln[num])
     print('------------------\n')
 
-show_kapitel(77, all_kapiteln)
+## Функция для получения выбора пользователя из доступных опций
+def user_choice(options: dict):
+    keys = list(options.keys())
+    while True:
+        print("\nDeine Optionen:")
+        for index, key in enumerate(keys, start=1):
+            print(f"{index}. {key}")
+
+        wahl = input(">> ").strip()
+        if wahl.isdigit():
+            pos = int(wahl) - 1
+            if 0 <= pos < len(keys):
+                return options[keys[pos]]
+        print("❌ Ungültige Eingabe! Bitte eine Zahl wählen.")
+
+## Функция для применения эффектов на игрока
+def apply_effekt(effekt: dict):
+    for stat, value in effekt.items():
+        if stat not in spieler:
+            continue
+        vorher = spieler[stat]
+        if stat == "Vitalität" and value == 0:
+            spieler[stat] = 0
+        else:
+            spieler[stat] = vorher + value
+        print(f"⚡ {stat} verändert sich: {vorher} -> {spieler[stat]}")
+
+## Функция для обработки полученных предметов
+def handle_aktionen(aktionen):
+    for ak in aktionen:
+        typ = ak.get("typ")
+        wert = ak.get("wert")
+        if typ == "item" and wert:
+            spieler["Inventar"].append(wert)
+            print(f"👜 Du hast erhalten: {wert}")
+
+            # применить бонус оружия
+            if "effekt" in ak:
+                apply_effekt(ak["effekt"])
+        elif typ == "verlust" and wert == "Inventar":
+            spieler["Inventar"].clear()
+            print("🗑️ Dein Inventar ist jetzt leer.")
+
+## Функция для проведения теста атрибута
+def test_attribute(attribut, gegen):
+    wurf = random.randint(1, 20)
+    wert = spieler[attribut]
+    print(f"\n🎲 Teste {attribut} gegen {gegen}: Wurf={wurf}, Wert={wert}")
+
+    return (wurf + wert) >= gegen
+
+## Функция для проведения боя
+def kampf_start(gegner_name):
+    print(f"\n⚔️ Du kämpfst gegen: {gegner_name}")
+    spieler_wurf = random.randint(1, 6)
+    gegner_wurf = random.randint(1, 6)
+    print(f"Du würfelst {spieler_wurf}, der Gegner {gegner_wurf}.")
+    if spieler_wurf >= gegner_wurf:
+        print("🏆 Du gewinnst den Kampf!")
+    else:
+        print("💀 Du verlierst den Kampf!")
+        spieler["Vitalität"] = 0
+
+
+def inventar_setzen(neue_gegenstaende):
+    spieler["Inventar"] = list(neue_gegenstaende)
+    if spieler["Inventar"]:
+        print("🎒 Neues Inventar:", ", ".join(spieler["Inventar"]))
+    else:
+        print("🎒 Dein Inventar ist leer.")
+
+
+def hole_next(sektion):
+    ziel = sektion.get("next")
+    if isinstance(ziel, list):
+        return ziel[0] if ziel else None
+    return ziel
+
+
+### Основная функция для прохождения игры
+def spiele_ab():
+    aktuelle = 1  # начало
+    while True:
+        sek = sektionen.get(aktuelle)
+        if sek is None:
+            print(f"Für Kapitel {aktuelle} gibt es noch keinen Programmteil.")
+            break
+
+        show_kapitel(aktuelle)
+
+        if "aktionen" in sek:
+            handle_aktionen(sek["aktionen"])
+
+        if "inventar_reset" in sek:
+            inventar_setzen(sek["inventar_reset"])
+
+        effekt = sek.get("effekt")
+        if effekt:
+            if effekt.get("Vitalität") == 0:
+                print("\n💀 Du bist gestorben.")
+                break
+            apply_effekt(effekt)
+            if spieler["Vitalität"] <= 0:
+                print("\n💀 Du bist gestorben.")
+                break
+
+        if "test" in sek:
+            t = sek["test"]
+            if test_attribute(t["attribut"], t["gegen"]):
+                aktuelle = t["erfolg"]
+            else:
+                aktuelle = t["fehlschlag"]
+            continue
+
+        if "kampf" in sek:
+            kampf_start(sek["kampf"])
+            if spieler["Vitalität"] <= 0:
+                print("\n💀 Du bist im Kampf gefallen.")
+                break
+
+        if "wahl" in sek:
+            aktuelle = user_choice(sek["wahl"])
+            continue
+
+        naechster = hole_next(sek)
+        if naechster:
+            aktuelle = naechster
+            continue
+
+        print("\n🎉 ENDE DES SPIELS")
+        break
+
+
+if __name__ == "__main__":
+    spiele_ab()
