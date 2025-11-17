@@ -1,5 +1,6 @@
 import os
 import random
+
 ## тут используем Dictionary для хранения всех глав ( Словарь all_kapiteln )
 ## где ключ — номер секции
 ## а значение — текст главы:
@@ -217,6 +218,12 @@ Die schwarzen Augen im wildschweinartigen Schädel des Gartak weiten sich, als d
 
     'K59': """
 Mit nur einem Satz springst du dem Wärter in den Rücken. Der Gartak ist vollkommen überrascht und nicht in der Lage sich gekonnt zu verteidigen.
+""",
+
+    "FLUCHT": """
+🎉 ERFOLG! Du hast den Wärter besiegt und entkommst aus dem Gefängnis. 
+Mit den Schlüsseln des Gartaks öffnest du eine geheime Pforte und fliehst in die Freiheit.
+Dein Abenteuer geht weiter, aber das ist eine andere Geschichte...
 """
 }
 
@@ -326,8 +333,7 @@ sektionen = {
 
     # --- 100 (решение: сыграть заново или продолжить) ---
     100: {"kapitel": 100, 
-          "restart_frage": True, 
-          "next": [101]
+          "restart_frage": True
           },
 
     # --- 56 / 3 / 15 / 10 / 46 / 88 / — побочная ветка ---
@@ -373,11 +379,11 @@ sektionen = {
     },
 
     256: {"kapitel": 256, 
-          "next": [101]
+          "next": ["K1"]
           },
     105: {"kapitel": 105, 
           "effekt": {"Vitalität": -1}, 
-          "next": [101]
+          "next": ["K1"]
           },
 
     # --- Бой с Гартаком ---
@@ -392,12 +398,17 @@ sektionen = {
     "K59": {
         "kapitel": "K59",
         "kampf": "Gartak_Überrascht",
-        "next": [256]
+        "next": ["FLUCHT"]
     },
     "K8": {
         "kapitel": "K8",
         "kampf": "Gartak",
-        "next": [256]
+        "next": ["FLUCHT"]
+    },
+
+    "FLUCHT": {
+        "kapitel": "FLUCHT",
+        "next": None
     }
 }
 
@@ -410,39 +421,23 @@ START_SPIELER = {
     "Resistenz": 2,
     "Inventar": []
 }
-spieler = {
-    "Name": START_SPIELER["Name"],
-    "Vitalität": START_SPIELER["Vitalität"],
-    "Stärke": START_SPIELER["Stärke"],
-    "Angriff": START_SPIELER["Angriff"],
-    "Verteidigung": START_SPIELER["Verteidigung"],
-    "Resistenz": START_SPIELER["Resistenz"],
-    "Inventar": list(START_SPIELER["Inventar"])
-}
+
+spieler = START_SPIELER.copy()
 
 GEGNER_STATS = {
     "Gartak": {
-        "Angriff": 11,
-        "Verteidigung": 10,
-        "Resistenz": 2,
-        "Vitalität": 8
+        "Angriff": 11, "Verteidigung": 10, "Resistenz": 2, "Vitalität": 8
     },
     "Gartak_Überrascht": {
-        "Angriff": 10,
-        "Verteidigung": 10,
-        "Resistenz": 2,
-        "Vitalität": 8
+        "Angriff": 10, "Verteidigung": 10, "Resistenz": 2, "Vitalität": 8
     }
 }
 
-## Функция для отображения текста главы
 def show_kapitel(num):
-    print()
-    print(f'--- Kapitel {num} ---')
+    print(f'\n--- Kapitel {num} ---')
     print(all_kapiteln[num])
     print('------------------\n')
 
-## Функция для получения выбора пользователя из доступных опций
 def user_choice(options: dict):
     keys = list(options.keys())
     while True:
@@ -450,29 +445,26 @@ def user_choice(options: dict):
         for index, key in enumerate(keys, start=1):
             print(f"{index}. {key}")
 
-        wahl = input(">> ").strip()
-        if wahl.lower() in ("s", "stats", "status"):
-            zeige_stats()
-            continue
-        if wahl.isdigit():
+        try:
+            wahl = input(">> ").strip()
+            if wahl.lower() in ("s", "stats", "status"):
+                zeige_stats()
+                continue
             pos = int(wahl) - 1
             if 0 <= pos < len(keys):
                 return options[keys[pos]]
-        print("❌ Ungültige Eingabe! Bitte eine Zahl wählen.")
+            print("❌ Ungültige Eingabe! Bitte eine Zahl wählen.")
+        except ValueError:
+            print("❌ Fehlerhafte Eingabe! Bitte eine gültige Zahl eingeben.")
 
-## Функция для применения эффектов на игрока
 def apply_effekt(effekt: dict):
     for stat, value in effekt.items():
         if stat not in spieler:
             continue
         vorher = spieler[stat]
-        if stat == "Vitalität" and value == 0:
-            spieler[stat] = 0
-        else:
-            spieler[stat] = vorher + value
+        spieler[stat] = max(0, vorher + value)  # Защита от отрицательных значений
         print(f"⚡ {stat} verändert sich: {vorher} -> {spieler[stat]}")
 
-## Функция для обработки полученных предметов
 def handle_aktionen(aktionen):
     for ak in aktionen:
         typ = ak.get("typ")
@@ -480,8 +472,6 @@ def handle_aktionen(aktionen):
         if typ == "item" and wert:
             spieler["Inventar"].append(wert)
             print(f"👜 Du hast erhalten: {wert}")
-
-            # применить бонус оружия
             if "effekt" in ak:
                 apply_effekt(ak["effekt"])
         elif typ == "verlust" and wert == "Inventar":
@@ -490,62 +480,57 @@ def handle_aktionen(aktionen):
 
 def zeige_stats():
     print("\n📊 Deine Werte:")
-    print(f"- Name: {spieler['Name']}")
-    print(f"- Vitalität: {spieler['Vitalität']}")
-    print(f"- Stärke: {spieler['Stärke']}")
-    print(f"- Angriff: {spieler['Angriff']}")
-    print(f"- Verteidigung: {spieler['Verteidigung']}")
-    print(f"- Resistenz: {spieler['Resistenz']}")
-    inv = spieler["Inventar"]
-    print("- Inventar:", ", ".join(inv) if inv else "leer")
+    for key, value in spieler.items():
+        if key == "Inventar":
+            inv = value
+            print(f"- Inventar: {', '.join(inv) if inv else 'leer'}")
+        else:
+            print(f"- {key}: {value}")
 
 def item_auswahl(optionen):
     print("\nWähle einen Gegenstand aus:")
     for index, opt in enumerate(optionen, start=1):
         print(f"{index}. {opt['name']}")
 
-    ausgewaehlt = None
     while True:
-        wahl = input(">> ").strip()
-        if wahl.lower() in ("s", "stats", "status"):
-            zeige_stats()
-            continue
-        if wahl.isdigit():
+        try:
+            wahl = input(">> ").strip()
+            if wahl.lower() in ("s", "stats", "status"):
+                zeige_stats()
+                continue
             pos = int(wahl) - 1
             if 0 <= pos < len(optionen):
-                ausgewaehlt = optionen[pos]
-                break
-        print("❌ Ungültige Eingabe! Bitte eine Zahl wählen.")
+                item = optionen[pos]
+                name = item["name"]
+                spieler["Inventar"].append(name)
+                print(f"👜 Du hast aufgenommen: {name}")
+                if "effekt" in item:
+                    apply_effekt(item["effekt"])
+                return
+            print("❌ Ungültige Eingabe! Bitte eine Zahl wählen.")
+        except ValueError:
+            print("❌ Fehlerhafte Eingabe! Bitte eine gültige Zahl eingeben.")
 
-    item = ausgewaehlt
-    name = item["name"]
-    spieler["Inventar"].append(name)
-    print(f"👜 Du hast aufgenommen: {name}")
-    if "effekt" in item:
-        apply_effekt(item["effekt"])
-
-## Функция для проведения теста атрибута
 def test_attribute(attribut, gegen):
+    if attribut not in spieler:
+        print(f"❌ Unbekanntes Attribut: {attribut}")
+        return False
     wurf = random.randint(1, 20)
     wert = spieler[attribut]
     print(f"\n🎲 Teste {attribut} gegen {gegen}: Wurf={wurf}, Wert={wert}")
-
     return (wurf + wert) >= gegen
 
-## Функция для проведения боя
 def kampf_start(gegner_name):
     print(f"\n⚔️ Kampf gegen: {gegner_name}")
     enemy = GEGNER_STATS[gegner_name].copy()
 
     while spieler["Vitalität"] > 0 and enemy["Vitalität"] > 0:
+        # Атака игрока
         spieler_angriff = spieler["Angriff"] + random.randint(1, 6)
         if spieler_angriff > enemy["Verteidigung"]:
-            schaden = spieler_angriff - enemy["Verteidigung"] - enemy["Resistenz"]
-            if schaden > 0:
-                enemy["Vitalität"] -= schaden
-                print(f"🎯 Du triffst! Schaden: {schaden}")
-            else:
-                print("🛡️ Der Gegner absorbiert den Schaden!")
+            schaden = max(0, spieler_angriff - enemy["Verteidigung"] - enemy["Resistenz"])
+            enemy["Vitalität"] = max(0, enemy["Vitalität"] - schaden)
+            print(f"🎯 Du triffst! Schaden: {schaden}")
         else:
             print("❌ Dein Angriff verfehlt!")
 
@@ -553,14 +538,12 @@ def kampf_start(gegner_name):
             print("🏆 Du besiegst den Gartak!")
             return True
 
+        # Атака врага
         gegner_angriff = enemy["Angriff"] + random.randint(1, 6)
         if gegner_angriff > spieler["Verteidigung"]:
-            schaden = gegner_angriff - spieler["Verteidigung"] - spieler["Resistenz"]
-            if schaden > 0:
-                spieler["Vitalität"] -= schaden
-                print(f"💥 Der Gartak trifft dich! Schaden: {schaden}")
-            else:
-                print("✨ Du absorbierst den Schaden!")
+            schaden = max(0, gegner_angriff - spieler["Verteidigung"] - spieler["Resistenz"])
+            spieler["Vitalität"] = max(0, spieler["Vitalität"] - schaden)
+            print(f"💥 Der Gartak trifft dich! Schaden: {schaden}")
         else:
             print("⚡ Der Angriff des Gartaks verfehlt!")
 
@@ -573,46 +556,22 @@ def kampf_start(gegner_name):
 
     return True
 
-
-def inventar_setzen(neue_gegenstaende):
-    spieler["Inventar"] = list(neue_gegenstaende)
-    if spieler["Inventar"]:
-        print("🎒 Neues Inventar:", ", ".join(spieler["Inventar"]))
-    else:
-        print("🎒 Dein Inventar ist leer.")
-
-
 def hole_next(sektion):
     ziel = sektion.get("next")
     if isinstance(ziel, list):
         return ziel[0] if ziel else None
     return ziel
 
-
-def warte_auf_enter_oder_stats():
-    while True:
-        antwort = input("🔸 Weiter mit Enter ...").strip()
-        if antwort == "":
-            return
-        if antwort.lower() in ("s", "stats", "status"):
-            zeige_stats()
-            continue
-        print("Bitte Enter drücken oder 's' / 'stats' eingeben.")
-
+def warte_auf_enter():
+    input("🔸 Weiter mit Enter ...")
 
 def reset_spieler():
-    spieler["Name"] = START_SPIELER["Name"]
-    spieler["Vitalität"] = START_SPIELER["Vitalität"]
-    spieler["Stärke"] = START_SPIELER["Stärke"]
-    spieler["Angriff"] = START_SPIELER["Angriff"]
-    spieler["Verteidigung"] = START_SPIELER["Verteidigung"]
-    spieler["Resistenz"] = START_SPIELER["Resistenz"]
-    spieler["Inventar"] = list(START_SPIELER["Inventar"])
+    global spieler
+    spieler = START_SPIELER.copy()
 
-
-### Основная функция для прохождения игры
 def spiele_ab():
-    aktuelle = 1  # начало
+    aktuelle = 1
+    
     while True:
         sek = sektionen.get(aktuelle)
         if sek is None:
@@ -621,7 +580,7 @@ def spiele_ab():
         
         os.system('cls' if os.name == 'nt' else 'clear')
         show_kapitel(aktuelle)
-        warte_auf_enter_oder_stats()
+        warte_auf_enter()
 
         if "aktionen" in sek:
             handle_aktionen(sek["aktionen"])
@@ -629,51 +588,40 @@ def spiele_ab():
         if "item_auswahl" in sek:
             item_auswahl(sek["item_auswahl"])
 
-        if "inventar_reset" in sek:
-            inventar_setzen(sek["inventar_reset"])
-
         effekt = sek.get("effekt")
         if effekt:
-            if effekt.get("Vitalität") == 0:
-                print("\n💀 Du bist gestorben.")
-                break
             apply_effekt(effekt)
             if spieler["Vitalität"] <= 0:
                 print("\n💀 Du bist gestorben.")
+                if input("Neues Spiel? (j/n): ").strip().lower().startswith("j"):
+                    reset_spieler()
+                    aktuelle = 1
+                    continue
                 break
 
         if "test" in sek:
             t = sek["test"]
-            if test_attribute(t["attribut"], t["gegen"]):
-                aktuelle = t["erfolg"]
-            else:
-                aktuelle = t["fehlschlag"]
+            aktuelle = t["erfolg"] if test_attribute(t["attribut"], t["gegen"]) else t["fehlschlag"]
             continue
 
         if "kampf" in sek:
-            kampf_start(sek["kampf"])
-
-        if spieler["Vitalität"] <= 0:
-            print("\n💀 Du bist gestorben. Spiel Ende.")
-            antwort = input("Neues Spiel? (j/n): ").strip().lower()
-            if antwort.startswith("j"):
-                reset_spieler()
-                aktuelle = 1
-                continue
-            break
+            if not kampf_start(sek["kampf"]):
+                print("\n💀 Du wurdest im Kampf besiegt!")
+                if input("Neues Spiel? (j/n): ").strip().lower().startswith("j"):
+                    reset_spieler()
+                    aktuelle = 1
+                    continue
+                break
+            aktuelle = hole_next(sek)
+            continue
 
         if "inventar_wahl" in sek:
             info = sek["inventar_wahl"]
-            ziel = info["hat"] if info["item"] in spieler["Inventar"] else info["nicht"]
-            aktuelle = ziel
+            aktuelle = info["hat"] if info["item"] in spieler["Inventar"] else info["nicht"]
             continue
 
         if sek.get("restart_frage"):
-            antwort = input("Nochmal von vorne starten? (j/n) ").strip().lower()
-            if antwort in ("s", "stats", "status"):
-                zeige_stats()
-                continue
-            if antwort.startswith("j") or spieler["Vitalität"] < 1:
+            if input("Nochmal von vorne starten? (j/n) ").strip().lower().startswith("j"):
                 reset_spieler()
                 aktuelle = 1
             else:
@@ -691,7 +639,6 @@ def spiele_ab():
 
         print("\n🎉 ENDE DES SPIELS")
         break
-
 
 if __name__ == "__main__":
     spiele_ab()
