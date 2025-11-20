@@ -346,13 +346,11 @@ gegner_stats = {
 # ========== ФУНКЦИИ ИГРЫ ==========
 
 def zeige_kapitel(nummer):
-    """Показывает текст главы"""
     print(f"\n=== Kapitel {nummer} ===")
     print(texte.get(nummer, "Kapiteltext nicht gefunden"))
     print("=" * 20)
 
 def frage_spieler(optionen):
-    """Спрашивает игрока, что делать"""
     tasten = list(optionen.keys())
     
     while True:
@@ -368,7 +366,6 @@ def frage_spieler(optionen):
                 zeige_statistik()
                 continue
                 
-            # Превращаем в число
             nummer = int(eingabe) - 1
             
             if 0 <= nummer < len(tasten):
@@ -380,7 +377,6 @@ def frage_spieler(optionen):
             print("Geben Sie eine normale Zahl ein!")
 
 def aendere_stats(aenderungen):
-    """Меняет статистику игрока"""
     for stat, wert in aenderungen.items():
         if stat in spieler_stats:
             alt = spieler_stats[stat]
@@ -388,7 +384,6 @@ def aendere_stats(aenderungen):
             print(f"{stat}: {alt} -> {spieler_stats[stat]}")
 
 def verwalte_inventar(aktionen):
-    """Добавляет или убирает вещи"""
     for aktion in aktionen:
         if aktion["typ"] == "item" and "wert" in aktion:
             spieler_stats["Inventar"].append(aktion["wert"])
@@ -403,7 +398,6 @@ def verwalte_inventar(aktionen):
             print("Alles ist weg!")
 
 def zeige_statistik():
-    """Показывает всю статистику игрока"""
     print("\n=== IHRE STATISTIKEN ===")
     for stat, wert in spieler_stats.items():
         if stat == "Inventar":
@@ -415,7 +409,6 @@ def zeige_statistik():
             print(f"{stat}: {wert}")
 
 def waehle_gegenstand(optionen):
-    """Выбор предмета из нескольких"""
     print("\nWähle aus, was SIe mitnehmen möchten:")
     for i, gegenstand in enumerate(optionen, 1):
         print(f"{i}. {gegenstand['name']}")
@@ -445,54 +438,45 @@ def waehle_gegenstand(optionen):
         except ValueError:
             print("Geben Sie die Nummer ein!")
 
+# Kapitel 271 > 256
 def teste_faehigkeit(faehigkeit, schwierigkeit):
-    """Проверяет удачу игрока"""
     if faehigkeit not in spieler_stats:
         print(f"Eine solche Fähigkeit existiert nicht: {faehigkeit}")
         return False
         
     wurf = random.randint(1, 20)
     wert = spieler_stats[faehigkeit]
-    print(f"\nPrüfung {faehigkeit} gegen {schwierigkeit}: wurf={wurf}, wert={wert}")
+    print(f"\nTest: ({wert}) + Wurf ({wurf}) gegen Schwierigkeit {schwierigkeit}")
     
     return (wurf + wert) >= schwierigkeit
 
 def kaempfe(gegner_name):
-    """Бой с врагом"""
-    print(f"\nKÄMPFE MIT: {gegner_name}")
-    gegner = gegner_stats[gegner_name].copy()
+    print(f"\nKÄMPFE MIT: {gegner_name} ")
 
-    while spieler_stats["Vitalität"] > 0 and gegner["Vitalität"] > 0:
-        # Игрок атакует
-        angriff = spieler_stats["Angriff"] + random.randint(1, 6)
-        if angriff > gegner["Verteidigung"]:
-            schaden = max(0, angriff - gegner["Verteidigung"] - gegner["Resistenz"])
-            gegner["Vitalität"] = max(0, gegner["Vitalität"] - schaden)
-            print(f"Erfolg! Schaden: {schaden}")
-        else:
-            print("Vermissen!")
+    gegner = gegner_stats[gegner_name]
 
-        if gegner["Vitalität"] <= 0:
-            print("SIEG! Der Feind ist besiegt!")
-            return True
+    wurf_spieler = random.randint(1, 6)
+    total_spieler = spieler_stats["Angriff"] + wurf_spieler
+    wurf_gegner = random.randint(1, 6)
+    total_gegner = gegner["Angriff"] + wurf_gegner
 
-        # Враг атакует
-        gegner_angriff = gegner["Angriff"] + random.randint(1, 6)
-        if gegner_angriff > spieler_stats["Verteidigung"]:
-            schaden = max(0, gegner_angriff - spieler_stats["Verteidigung"] - spieler_stats["Resistenz"])
-            spieler_stats["Vitalität"] = max(0, spieler_stats["Vitalität"] - schaden)
-            print(f"Der Feind wurde getroffen! Schaden: {schaden}")
-        else:
-            print("Der Feind hat danebengeschossen!")
+    print(f"Sie würfeln {wurf_spieler} Gesamt: {total_spieler}")
+    print(f"Gegner würfelt {wurf_gegner} Gesamt: {total_gegner}")
 
-        print(f"Ihre Gesundheit: {spieler_stats['Vitalität']}")
-        print(f"Feindliche Gesundheit: {gegner['Vitalität']}")
+    if total_spieler > total_gegner:
+        print("\nSIEG! Sie haben den Gegner besiegt.")
 
-        if spieler_stats["Vitalität"] <= 0:
-            print("Du hast den Kampf verloren!")
-            return False
+    schaden = total_gegner - spieler_stats["Verteidigung"]
+    if schaden < 0:
+        schaden = 0
 
-    return True
+    spieler_stats["Vitalität"] = spieler_stats["Vitalität"] - schaden
+    print(f"\n Sie haben VERLOREN und erledigen {schaden} Schaden!")
+    print(f"Vitalitet jetzt: {spieler_stats["Vitalität"]}")
+
+    if spieler_stats["Vitalität"] <= 0:
+        print("\n Sie sind im Kampf verloren")
+        return False
 
 def naechstes_kapitel(kapitel_info):
     """Узнает куда идти дальше"""
