@@ -221,7 +221,7 @@ Mit nur einem Satz springst du dem Wärter in den Rücken. Der Gartak ist vollko
 """,
 
     "FLUCHT": """
-🎉 ERFOLG! Du hast den Wärter besiegt und entkommst aus dem Gefängnis. 
+ERFOLG! Du hast den Wärter besiegt und entkommst aus dem Gefängnis. 
 Mit den Schlüsseln des Gartaks öffnest du eine geheime Pforte und fliehst in die Freiheit.
 Dein Abenteuer geht weiter, aber das ist eine andere Geschichte...
 """
@@ -347,7 +347,7 @@ gegner_stats = {
 
 def zeige_kapitel(nummer):
     """Показывает текст главы"""
-    print(f"\n=== Kapitel{nummer} ===")
+    print(f"\n=== Kapitel {nummer} ===")
     print(texte.get(nummer, "Kapiteltext nicht gefunden"))
     print("=" * 20)
 
@@ -416,7 +416,7 @@ def zeige_statistik():
 
 def waehle_gegenstand(optionen):
     """Выбор предмета из нескольких"""
-    print("\Wähle aus, was SIe mitnehmen möchten:")
+    print("\nWähle aus, was SIe mitnehmen möchten:")
     for i, gegenstand in enumerate(optionen, 1):
         print(f"{i}. {gegenstand['name']}")
 
@@ -563,7 +563,7 @@ def spiele_abenteuer():
         if "kampf" in kapitel_info:
             if not kaempfe(kapitel_info["kampf"]):
                 print("\n Sie sind im Kampf gefallen!")
-                if input("Von vorne anfangen? (j/n): ").lower().startswith("д"):
+                if input("Von vorne anfangen? (j/n): ").lower().startswith("j"):
                     starte_neu()
                     aktuelle_kapitel = 1
                     continue
@@ -582,7 +582,7 @@ def spiele_abenteuer():
 
         # Вопрос о перезапуске
         if kapitel_info.get("restart_frage"):
-            if input("Von vorne anfangen? (j/n): ").lower().startswith("д"):
+            if input("Von vorne anfangen? (j/n): ").lower().startswith("j"):
                 starte_neu()
                 aktuelle_kapitel = 1
             else:
