@@ -347,8 +347,8 @@ gegner_stats = {
 
 def zeige_kapitel(nummer):
     """Показывает текст главы"""
-    print(f"\n=== ГЛАВА {nummer} ===")
-    print(texte.get(nummer, "Текст главы не найден"))
+    print(f"\n=== Kapitel{nummer} ===")
+    print(texte.get(nummer, "Kapiteltext nicht gefunden"))
     print("=" * 20)
 
 def frage_spieler(optionen):
@@ -356,12 +356,12 @@ def frage_spieler(optionen):
     tasten = list(optionen.keys())
     
     while True:
-        print("\nЧто будешь делать?")
+        print("\nWas werden Sie tun?")
         for i, option in enumerate(tasten, 1):
             print(f"{i}. {option}")
         
         try:
-            eingabe = input("Твой выбор (цифра): ").strip()
+            eingabe = input("Ihre Wahl (Nummer): ").strip()
             
             # Показать статистику если попросили
             if eingabe.lower() in ("s", "stats"):
@@ -374,10 +374,10 @@ def frage_spieler(optionen):
             if 0 <= nummer < len(tasten):
                 return optionen[tasten[nummer]]
             else:
-                print("❌ Нет такого варианта! Выбери цифру из списка.")
+                print("Diese Option gibt es nicht! Wählen Sie eine Nummer aus der Liste.")
                 
         except ValueError:
-            print("❌ Введи нормальную цифру!")
+            print("Geben Sie eine normale Zahl ein!")
 
 def aendere_stats(aenderungen):
     """Меняет статистику игрока"""
@@ -385,14 +385,14 @@ def aendere_stats(aenderungen):
         if stat in spieler_stats:
             alt = spieler_stats[stat]
             spieler_stats[stat] = max(0, alt + wert)  # Не меньше нуля
-            print(f"⚡ {stat}: {alt} -> {spieler_stats[stat]}")
+            print(f"{stat}: {alt} -> {spieler_stats[stat]}")
 
 def verwalte_inventar(aktionen):
     """Добавляет или убирает вещи"""
     for aktion in aktionen:
         if aktion["typ"] == "item" and "wert" in aktion:
             spieler_stats["Inventar"].append(aktion["wert"])
-            print(f"🎒 Получил: {aktion['wert']}")
+            print(f"Erhalten: {aktion['wert']}")
             
             # Если есть бонус - применяем
             if "effekt" in aktion:
@@ -400,29 +400,29 @@ def verwalte_inventar(aktionen):
                 
         elif aktion["typ"] == "verlust" and aktion["wert"] == "Inventar":
             spieler_stats["Inventar"] = []
-            print("🗑️ Все вещи пропали!")
+            print("Alles ist weg!")
 
 def zeige_statistik():
     """Показывает всю статистику игрока"""
-    print("\n=== ТВОЯ СТАТИСТИКА ===")
+    print("\n=== IHRE STATISTIKEN ===")
     for stat, wert in spieler_stats.items():
         if stat == "Inventar":
             if wert:
-                print(f"🎒 Вещи: {', '.join(wert)}")
+                print(f"Dinge: {', '.join(wert)}")
             else:
-                print("🎒 Вещи: пусто")
+                print("Dinge: leer")
         else:
             print(f"{stat}: {wert}")
 
 def waehle_gegenstand(optionen):
     """Выбор предмета из нескольких"""
-    print("\nВыбери что взять:")
+    print("\Wähle aus, was SIe mitnehmen möchten:")
     for i, gegenstand in enumerate(optionen, 1):
         print(f"{i}. {gegenstand['name']}")
 
     while True:
         try:
-            wahl = input("Твой выбор: ").strip()
+            wahl = input("Ihren Wahl: ").strip()
             
             if wahl.lower() in ("s", "stats"):
                 zeige_statistik()
@@ -434,32 +434,32 @@ def waehle_gegenstand(optionen):
                 item = optionen[nummer]
                 name = item["name"]
                 spieler_stats["Inventar"].append(name)
-                print(f"🎒 Взял: {name}")
+                print(f"Habe genommen: {name}")
                 
                 if "effekt" in item:
                     aendere_stats(item["effekt"])
                 return
             else:
-                print("❌ Нет такого предмета!")
+                print("Es gibt keinen solchen Artikel!")
                 
         except ValueError:
-            print("❌ Введи цифру!")
+            print("Geben Sie die Nummer ein!")
 
 def teste_faehigkeit(faehigkeit, schwierigkeit):
     """Проверяет удачу игрока"""
     if faehigkeit not in spieler_stats:
-        print(f"❌ Нет такой способности: {faehigkeit}")
+        print(f"Eine solche Fähigkeit existiert nicht: {faehigkeit}")
         return False
         
     wurf = random.randint(1, 20)
     wert = spieler_stats[faehigkeit]
-    print(f"\n🎲 Проверка {faehigkeit} против {schwierigkeit}: бросок={wurf}, значение={wert}")
+    print(f"\nPrüfung {faehigkeit} gegen {schwierigkeit}: wurf={wurf}, wert={wert}")
     
     return (wurf + wert) >= schwierigkeit
 
 def kaempfe(gegner_name):
     """Бой с врагом"""
-    print(f"\n⚔️ БОЙ С: {gegner_name}")
+    print(f"\nKÄMPFE MIT: {gegner_name}")
     gegner = gegner_stats[gegner_name].copy()
 
     while spieler_stats["Vitalität"] > 0 and gegner["Vitalität"] > 0:
@@ -468,12 +468,12 @@ def kaempfe(gegner_name):
         if angriff > gegner["Verteidigung"]:
             schaden = max(0, angriff - gegner["Verteidigung"] - gegner["Resistenz"])
             gegner["Vitalität"] = max(0, gegner["Vitalität"] - schaden)
-            print(f"🎯 Попал! Урон: {schaden}")
+            print(f"Erfolg! Schaden: {schaden}")
         else:
-            print("❌ Промах!")
+            print("Vermissen!")
 
         if gegner["Vitalität"] <= 0:
-            print("🏆 ПОБЕДА! Враг повержен!")
+            print("SIEG! Der Feind ist besiegt!")
             return True
 
         # Враг атакует
@@ -481,15 +481,15 @@ def kaempfe(gegner_name):
         if gegner_angriff > spieler_stats["Verteidigung"]:
             schaden = max(0, gegner_angriff - spieler_stats["Verteidigung"] - spieler_stats["Resistenz"])
             spieler_stats["Vitalität"] = max(0, spieler_stats["Vitalität"] - schaden)
-            print(f"💥 Враг попал! Урон: {schaden}")
+            print(f"Der Feind wurde getroffen! Schaden: {schaden}")
         else:
-            print("⚡ Враг промахнулся!")
+            print("Der Feind hat danebengeschossen!")
 
-        print(f"❤️ Твое здоровье: {spieler_stats['Vitalität']}")
-        print(f"💀 Здоровье врага: {gegner['Vitalität']}")
+        print(f"Ihre Gesundheit: {spieler_stats['Vitalität']}")
+        print(f"Feindliche Gesundheit: {gegner['Vitalität']}")
 
         if spieler_stats["Vitalität"] <= 0:
-            print("💀 Ты проиграл бой!")
+            print("Du hast den Kampf verloren!")
             return False
 
     return True
@@ -503,7 +503,7 @@ def naechstes_kapitel(kapitel_info):
 
 def warte_auf_enter():
     """Ждет пока игрок нажмет Enter"""
-    input("\n🔸 Нажми Enter чтобы продолжить...")
+    input("\nDrücken Sie die Eingabetaste, um fortzufahren...")
 
 def starte_neu():
     """Начинает игру заново"""
@@ -524,7 +524,7 @@ def spiele_abenteuer():
     while True:
         kapitel_info = wege.get(aktuelle_kapitel)
         if not kapitel_info:
-            print(f"Глава {aktuelle_kapitel} не найдена!")
+            print(f"Kapitel {aktuelle_kapitel} nicht gefunden!")
             break
         
         # Очищаем экран и показываем главу
@@ -543,8 +543,8 @@ def spiele_abenteuer():
         if "effekt" in kapitel_info:
             aendere_stats(kapitel_info["effekt"])
             if spieler_stats["Vitalität"] <= 0:
-                print("\n💀 Ты умер!")
-                if input("Начать заново? (д/н): ").lower().startswith("д"):
+                print("\n Sie sind tot")
+                if input("Von vorne anfangen? (j/n): ").lower().startswith("j"):
                     starte_neu()
                     aktuelle_kapitel = 1
                     continue
@@ -562,8 +562,8 @@ def spiele_abenteuer():
         # Бой
         if "kampf" in kapitel_info:
             if not kaempfe(kapitel_info["kampf"]):
-                print("\n💀 Ты погиб в бою!")
-                if input("Начать заново? (д/н): ").lower().startswith("д"):
+                print("\n Sie sind im Kampf gefallen!")
+                if input("Von vorne anfangen? (j/n): ").lower().startswith("д"):
                     starte_neu()
                     aktuelle_kapitel = 1
                     continue
@@ -582,7 +582,7 @@ def spiele_abenteuer():
 
         # Вопрос о перезапуске
         if kapitel_info.get("restart_frage"):
-            if input("Начать игру заново? (д/н): ").lower().startswith("д"):
+            if input("Von vorne anfangen? (j/n): ").lower().startswith("д"):
                 starte_neu()
                 aktuelle_kapitel = 1
             else:
@@ -601,7 +601,7 @@ def spiele_abenteuer():
             continue
 
         # Конец игры
-        print("\n🎉 ИГРА ЗАКОНЧЕНА!")
+        print("\n SPIEL VORBEI!")
         break
 
 # Запускаем игру
