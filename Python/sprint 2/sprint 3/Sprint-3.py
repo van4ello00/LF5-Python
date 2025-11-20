@@ -346,13 +346,11 @@ gegner_stats = {
 # ========== ФУНКЦИИ ИГРЫ ==========
 
 def zeige_kapitel(nummer):
-    """Показывает текст главы"""
     print(f"\n=== Kapitel {nummer} ===")
     print(texte.get(nummer, "Kapiteltext nicht gefunden"))
     print("=" * 20)
 
 def frage_spieler(optionen):
-    """Спрашивает игрока, что делать"""
     tasten = list(optionen.keys())
     
     while True:
@@ -380,7 +378,6 @@ def frage_spieler(optionen):
             print("Geben Sie eine normale Zahl ein!")
 
 def aendere_stats(aenderungen):
-    """Меняет статистику игрока"""
     for stat, wert in aenderungen.items():
         if stat in spieler_stats:
             alt = spieler_stats[stat]
@@ -388,7 +385,6 @@ def aendere_stats(aenderungen):
             print(f"{stat}: {alt} -> {spieler_stats[stat]}")
 
 def verwalte_inventar(aktionen):
-    """Добавляет или убирает вещи"""
     for aktion in aktionen:
         if aktion["typ"] == "item" and "wert" in aktion:
             spieler_stats["Inventar"].append(aktion["wert"])
@@ -403,7 +399,6 @@ def verwalte_inventar(aktionen):
             print("Alles ist weg!")
 
 def zeige_statistik():
-    """Показывает всю статистику игрока"""
     print("\n=== IHRE STATISTIKEN ===")
     for stat, wert in spieler_stats.items():
         if stat == "Inventar":
@@ -415,7 +410,6 @@ def zeige_statistik():
             print(f"{stat}: {wert}")
 
 def waehle_gegenstand(optionen):
-    """Выбор предмета из нескольких"""
     print("\nWähle aus, was SIe mitnehmen möchten:")
     for i, gegenstand in enumerate(optionen, 1):
         print(f"{i}. {gegenstand['name']}")
@@ -446,7 +440,6 @@ def waehle_gegenstand(optionen):
             print("Geben Sie die Nummer ein!")
 
 def teste_faehigkeit(faehigkeit, schwierigkeit):
-    """Проверяет удачу игрока"""
     if faehigkeit not in spieler_stats:
         print(f"Eine solche Fähigkeit existiert nicht: {faehigkeit}")
         return False
@@ -458,7 +451,6 @@ def teste_faehigkeit(faehigkeit, schwierigkeit):
     return (wurf + wert) >= schwierigkeit
 
 def kaempfe(gegner_name):
-    """Бой с врагом"""
     print(f"\nKÄMPFE MIT: {gegner_name}")
     gegner = gegner_stats[gegner_name].copy()
 
@@ -495,18 +487,15 @@ def kaempfe(gegner_name):
     return True
 
 def naechstes_kapitel(kapitel_info):
-    """Узнает куда идти дальше"""
     ziel = kapitel_info.get("next")
     if isinstance(ziel, list):
         return ziel[0] if ziel else None
     return ziel
 
 def warte_auf_enter():
-    """Ждет пока игрок нажмет Enter"""
     input("\nDrücken Sie die Eingabetaste, um fortzufahren...")
 
 def starte_neu():
-    """Начинает игру заново"""
     global spieler_stats
     spieler_stats = {
         "Vitalität": 10,
@@ -561,13 +550,16 @@ def spiele_abenteuer():
 
         # Бой
         if "kampf" in kapitel_info:
-            if not kaempfe(kapitel_info["kampf"]):
+            gegner = kapitel_info["kampf"]
+
+            if not kaempfe(gegner):
                 print("\n Sie sind im Kampf gefallen!")
                 if input("Von vorne anfangen? (j/n): ").lower().startswith("j"):
                     starte_neu()
                     aktuelle_kapitel = 1
                     continue
                 break
+
             aktuelle_kapitel = naechstes_kapitel(kapitel_info)
             continue
 
